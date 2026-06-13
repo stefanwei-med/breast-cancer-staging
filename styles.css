@@ -276,12 +276,15 @@ footer {
 }
 
 .mode-btn {
-  border: none;
-  padding: 12px 20px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--pink-dark);
   border-radius: 999px;
-  cursor: pointer;
+  padding: 10px 14px;
   font-weight: 700;
-  background: #f3f4f6;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(8, 35, 63, 0.04);
 }
 
 .mode-btn.selected {
