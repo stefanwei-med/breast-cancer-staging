@@ -4678,7 +4678,8 @@ const state = {
   Grade: null,
   HER2: null,
   ER: null,
-  PR: null
+  PR: null,
+  Oncotype: null
 };
 
 const OPTIONS = [
@@ -4746,6 +4747,15 @@ const OPTIONS = [
       { label: "Positive", value: "1" },
       { label: "Negative", value: "0" }
     ]
+  },
+  {
+    key: "Oncotype",
+    label: "Oncotype Dx Score",
+    pathologicalOnly: true,
+    options: [
+      { label: "< 11", value: "<11" },
+      { label: "≥ 11", value: ">=11" }
+    ]
   }
 ];
 
@@ -4771,10 +4781,48 @@ function calculateAnatomic() {
   return match ? match.Stage : null;
 }
 
+function calculateOncotypeOverride() {
+  if (stagingMode !== "pathologic") return null;
+  if (!state.Oncotype || state.Oncotype.value !== "<11") return null;
+
+  if (!state.T || !state.N || !state.M || !state.HER2 || !state.PR) {
+    return null;
+  }
+
+  const isT1N0M0 =
+    state.T.value === "1*" &&
+    Array.isArray(state.N.value) &&
+    state.N.value.includes("0") &&
+    state.M.value === "0";
+
+  const isT2N0M0 =
+    state.T.value === "2" &&
+    Array.isArray(state.N.value) &&
+    state.N.value.includes("0") &&
+    state.M.value === "0";
+
+  const isHER2Negative = state.HER2.value === "0";
+  const isPRPositive = state.PR.value === "1";
+
+  if ((isT1N0M0 || isT2N0M0) && isHER2Negative && isPRPositive) {
+    return "IA"; // change this if your Oncotype <11 rule maps to a different stage
+  }
+
+  return null;
+}
+
 function calculatePrognostic() {
   if (!state.T || !state.N || !state.M || !state.Grade || !state.HER2 || !state.ER || !state.PR) return null;
 
-  const activeRules =
+  const oncotypeOverride = calculateOncotypeOverride();
+
+if (oncotypeOverride) {
+  return {
+    Prognostic: oncotypeOverride
+  };
+}
+
+const activeRules =
   stagingMode === "clinical"
     ? CLINICAL_RULES
     : PATHOLOGIC_RULES;
@@ -4839,6 +4887,9 @@ function renderControls() {
   controls.innerHTML = "";
 
   OPTIONS.forEach(group => {
+  if (group.pathologicalOnly && stagingMode !== "pathologic") {
+    return;
+  }
     const section = document.createElement("section");
     section.className = "section-card";
 
@@ -4856,6 +4907,11 @@ function renderControls() {
       button.textContent = option.label;
       button.dataset.group = group.key;
       button.dataset.label = option.label;
+      
+      if (state[group.key] && state[group.key].label === option.label) {
+        button.classList.add("selected");
+      }
+      
       button.addEventListener("click", () => {
         state[group.key] = option;
         document.querySelectorAll(`[data-group="${group.key}"]`).forEach(btn => btn.classList.remove("selected"));
@@ -4920,6 +4976,8 @@ document.getElementById("clinicalMode").addEventListener("click", () => {
   document.getElementById("modeDescription").textContent =
     "Use clinical exam, imaging, biopsy, and pre-treatment receptor/grade data.";
 
+  state.Oncotype = null;
+  renderControls();  
   updateResults();
 });
 
@@ -4938,6 +4996,7 @@ document.getElementById("pathologicMode").addEventListener("click", () => {
   document.getElementById("modeDescription").textContent =
     "Use final surgical pathology values when available.";
 
+  renderControls();
   updateResults();
 });
 
