@@ -238,3 +238,24 @@ footer {
     font-size: 2.6rem;
   }
 }
+
+.result-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+  margin-bottom: 24px;
+}
+
+.copy-button {
+  border: none;
+  background: var(--pink);
+  color: white;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 12px 22px;
+  cursor: pointer;
+}
+
+.copy-button:hover {
+  background: var(--pink-dark);
+}
