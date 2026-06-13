@@ -4754,7 +4754,7 @@ const OPTIONS = [
     pathologicalOnly: true,
     options: [
       { label: "< 11", value: "<11" },
-      { label: "≥ 11", value: ">=11" }
+      { label: "≥ 11", value: ">=11" },
       { label: "Not Performed / Not Available", value: "NA" }
     ]
   }
