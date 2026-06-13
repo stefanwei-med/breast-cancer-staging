@@ -1,4 +1,440 @@
-const PROGNOSTIC_RULES = [
+let stagingMode = "clinical";
+const PATHOLOGIC_RULES_TSV = `
+is	0	0	Any	Any	Any	Any	0
+1*	0	0	1	1	1	1	IA
+1*	0	0	1	1	0	1	IA
+1*	0	0	1	1	1	0	IA
+1*	0	0	1	1	0	0	IA
+1*	0	0	1	0	1	1	IA
+1*	0	0	1	0	0	1	IA
+1*	0	0	1	0	1	0	IA
+1*	0	0	1	0	0	0	IA
+1*	0	0	2	1	1	1	IA
+1*	0	0	2	1	0	1	IA
+1*	0	0	2	1	1	0	IA
+1*	0	0	2	1	0	0	IA
+1*	0	0	2	0	1	1	IA
+1*	0	0	2	0	0	1	IA
+1*	0	0	2	0	1	0	IA
+1*	0	0	2	0	0	0	IB
+1*	0	0	3	1	1	1	IA
+1*	0	0	3	1	0	1	IA
+1*	0	0	3	1	1	0	IA
+1*	0	0	3	1	0	0	IA
+1*	0	0	3	0	1	1	IA
+1*	0	0	3	0	0	1	IA
+1*	0	0	3	0	1	0	IA
+1*	0	0	3	0	0	0	IB
+0	1mi	0	1	1	1	1	IA
+0	1mi	0	1	1	0	1	IA
+0	1mi	0	1	1	1	0	IA
+0	1mi	0	1	1	0	0	IA
+0	1mi	0	1	0	1	1	IA
+0	1mi	0	1	0	0	1	IA
+0	1mi	0	1	0	1	0	IA
+0	1mi	0	1	0	0	0	IA
+0	1mi	0	2	1	1	1	IA
+0	1mi	0	2	1	0	1	IA
+0	1mi	0	2	1	1	0	IA
+0	1mi	0	2	1	0	0	IA
+0	1mi	0	2	0	1	1	IA
+0	1mi	0	2	0	0	1	IA
+0	1mi	0	2	0	1	0	IA
+0	1mi	0	2	0	0	0	IB
+0	1mi	0	3	1	1	1	IA
+0	1mi	0	3	1	0	1	IA
+0	1mi	0	3	1	1	0	IA
+0	1mi	0	3	1	0	0	IA
+0	1mi	0	3	0	1	1	IA
+0	1mi	0	3	0	0	1	IA
+0	1mi	0	3	0	1	0	IA
+0	1mi	0	3	0	0	0	IB
+1*	1mi	0	1	1	1	1	IA
+1*	1mi	0	1	1	0	1	IA
+1*	1mi	0	1	1	1	0	IA
+1*	1mi	0	1	1	0	0	IA
+1*	1mi	0	1	0	1	1	IA
+1*	1mi	0	1	0	0	1	IA
+1*	1mi	0	1	0	1	0	IA
+1*	1mi	0	1	0	0	0	IA
+1*	1mi	0	2	1	1	1	IA
+1*	1mi	0	2	1	0	1	IA
+1*	1mi	0	2	1	1	0	IA
+1*	1mi	0	2	1	0	0	IA
+1*	1mi	0	2	0	1	1	IA
+1*	1mi	0	2	0	0	1	IA
+1*	1mi	0	2	0	1	0	IA
+1*	1mi	0	2	0	0	0	IB
+1*	1mi	0	3	1	1	1	IA
+1*	1mi	0	3	1	0	1	IA
+1*	1mi	0	3	1	1	0	IA
+1*	1mi	0	3	1	0	0	IA
+1*	1mi	0	3	0	1	1	IA
+1*	1mi	0	3	0	0	1	IA
+1*	1mi	0	3	0	1	0	IA
+1*	1mi	0	3	0	0	0	IB
+0	1**	0	1	1	1	1	IA
+0	1**	0	1	1	1	0	IB
+0	1**	0	1	1	0	1	IB
+0	1**	0	1	1	0	0	IIA
+0	1**	0	1	0	1	1	IA
+0	1**	0	1	0	1	0	IB
+0	1**	0	1	0	0	1	IB
+0	1**	0	1	0	0	0	IIA
+0	1**	0	2	1	1	1	IA
+0	1**	0	2	1	1	0	IB
+0	1**	0	2	1	0	1	IB
+0	1**	0	2	1	0	0	IIA
+0	1**	0	2	0	1	1	IA
+0	1**	0	2	0	1	0	IIA
+0	1**	0	2	0	0	1	IIA
+0	1**	0	2	0	0	0	IIA
+0	1**	0	3	1	1	1	IA
+0	1**	0	3	1	1	0	IIA
+0	1**	0	3	1	0	1	IIA
+0	1**	0	3	1	0	0	IIA
+0	1**	0	3	0	1	1	IB
+0	1**	0	3	0	1	0	IIA
+0	1**	0	3	0	0	1	IIA
+0	1**	0	3	0	0	0	IIA
+1*	1**	0	1	1	1	1	IA
+1*	1**	0	1	1	1	0	IB
+1*	1**	0	1	1	0	1	IB
+1*	1**	0	1	1	0	0	IIA
+1*	1**	0	1	0	1	1	IA
+1*	1**	0	1	0	1	0	IB
+1*	1**	0	1	0	0	1	IB
+1*	1**	0	1	0	0	0	IIA
+1*	1**	0	2	1	1	1	IA
+1*	1**	0	2	1	1	0	IB
+1*	1**	0	2	1	0	1	IB
+1*	1**	0	2	1	0	0	IIA
+1*	1**	0	2	0	1	1	IA
+1*	1**	0	2	0	1	0	IIA
+1*	1**	0	2	0	0	1	IIA
+1*	1**	0	2	0	0	0	IIA
+1*	1**	0	3	1	1	1	IA
+1*	1**	0	3	1	1	0	IIA
+1*	1**	0	3	1	0	1	IIA
+1*	1**	0	3	1	0	0	IIA
+1*	1**	0	3	0	1	1	IB
+1*	1**	0	3	0	1	0	IIA
+1*	1**	0	3	0	0	1	IIA
+1*	1**	0	3	0	0	0	IIA
+2	0	0	1	1	1	1	IA
+2	0	0	1	1	1	0	IB
+2	0	0	1	1	0	1	IB
+2	0	0	1	1	0	0	IIA
+2	0	0	1	0	1	1	IA
+2	0	0	1	0	1	0	IB
+2	0	0	1	0	0	1	IB
+2	0	0	1	0	0	0	IIA
+2	0	0	2	1	1	1	IA
+2	0	0	2	1	1	0	IB
+2	0	0	2	1	0	1	IB
+2	0	0	2	1	0	0	IIA
+2	0	0	2	0	1	1	IA
+2	0	0	2	0	1	0	IIA
+2	0	0	2	0	0	1	IIA
+2	0	0	2	0	0	0	IIA
+2	0	0	3	1	1	1	IA
+2	0	0	3	1	1	0	IIA
+2	0	0	3	1	0	1	IIA
+2	0	0	3	1	0	0	IIA
+2	0	0	3	0	1	1	IB
+2	0	0	3	0	1	0	IIA
+2	0	0	3	0	0	1	IIA
+2	0	0	3	0	0	0	IIA
+2	1***	0	1	1	1	1	IA
+2	1***	0	1	1	1	0	IIB
+2	1***	0	1	1	0	1	IIB
+2	1***	0	1	1	0	0	IIB
+2	1***	0	1	0	1	1	IA
+2	1***	0	1	0	1	0	IIB
+2	1***	0	1	0	0	1	IIB
+2	1***	0	1	0	0	0	IIB
+2	1***	0	2	1	1	1	IB
+2	1***	0	2	1	1	0	IIB
+2	1***	0	2	1	0	1	IIB
+2	1***	0	2	1	0	0	IIB
+2	1***	0	2	0	1	1	IB
+2	1***	0	2	0	1	0	IIB
+2	1***	0	2	0	0	1	IIB
+2	1***	0	2	0	0	0	IIB
+2	1***	0	3	1	1	1	IB
+2	1***	0	3	1	1	0	IIB
+2	1***	0	3	1	0	1	IIB
+2	1***	0	3	1	0	0	IIB
+2	1***	0	3	0	1	1	IIA
+2	1***	0	3	0	1	0	IIB
+2	1***	0	3	0	0	1	IIB
+2	1***	0	3	0	0	0	IIIA
+3	0	0	1	1	1	1	IA
+3	0	0	1	1	1	0	IIB
+3	0	0	1	1	0	1	IIB
+3	0	0	1	1	0	0	IIB
+3	0	0	1	0	1	1	IA
+3	0	0	1	0	1	0	IIB
+3	0	0	1	0	0	1	IIB
+3	0	0	1	0	0	0	IIB
+3	0	0	2	1	1	1	IB
+3	0	0	2	1	1	0	IIB
+3	0	0	2	1	0	1	IIB
+3	0	0	2	1	0	0	IIB
+3	0	0	2	0	1	1	IB
+3	0	0	2	0	1	0	IIB
+3	0	0	2	0	0	1	IIB
+3	0	0	2	0	0	0	IIB
+3	0	0	3	1	1	1	IB
+3	0	0	3	1	1	0	IIB
+3	0	0	3	1	0	1	IIB
+3	0	0	3	1	0	0	IIB
+3	0	0	3	0	1	1	IIA
+3	0	0	3	0	1	0	IIB
+3	0	0	3	0	0	1	IIB
+3	0	0	3	0	0	0	IIIA
+0	2	0	1	1	1	1	IB
+0	2	0	1	1	1	0	IIIA
+0	2	0	1	1	0	1	IIIA
+0	2	0	1	1	0	0	IIIA
+0	2	0	1	0	1	1	IB
+0	2	0	1	0	1	0	IIIA
+0	2	0	1	0	0	1	IIIA
+0	2	0	1	0	0	0	IIIA
+0	2	0	2	1	1	1	IB
+0	2	0	2	1	1	0	IIIA
+0	2	0	2	1	0	1	IIIA
+0	2	0	2	1	0	0	IIIA
+0	2	0	2	0	1	1	IB
+0	2	0	2	0	1	0	IIIA
+0	2	0	2	0	0	1	IIIA
+0	2	0	2	0	0	0	IIIB
+0	2	0	3	1	1	1	IIA
+0	2	0	3	1	1	0	IIIA
+0	2	0	3	1	0	1	IIIA
+0	2	0	3	1	0	0	IIIA
+0	2	0	3	0	1	1	IIB
+0	2	0	3	0	1	0	IIIA
+0	2	0	3	0	0	1	IIA
+0	2	0	3	0	0	0	IIIC
+1*	2	0	1	1	1	1	IB
+1*	2	0	1	1	1	0	IIIA
+1*	2	0	1	1	0	1	IIIA
+1*	2	0	1	1	0	0	IIIA
+1*	2	0	1	0	1	1	IB
+1*	2	0	1	0	1	0	IIIA
+1*	2	0	1	0	0	1	IIIA
+1*	2	0	1	0	0	0	IIIA
+1*	2	0	2	1	1	1	IB
+1*	2	0	2	1	1	0	IIIA
+1*	2	0	2	1	0	1	IIIA
+1*	2	0	2	1	0	0	IIIA
+1*	2	0	2	0	1	1	IB
+1*	2	0	2	0	1	0	IIIA
+1*	2	0	2	0	0	1	IIIA
+1*	2	0	2	0	0	0	IIIB
+1*	2	0	3	1	1	1	IIA
+1*	2	0	3	1	1	0	IIIA
+1*	2	0	3	1	0	1	IIIA
+1*	2	0	3	1	0	0	IIIA
+1*	2	0	3	0	1	1	IIB
+1*	2	0	3	0	1	0	IIIA
+1*	2	0	3	0	0	1	IIA
+1*	2	0	3	0	0	0	IIIC
+2	2	0	1	1	1	1	IB
+2	2	0	1	1	1	0	IIIA
+2	2	0	1	1	0	1	IIIA
+2	2	0	1	1	0	0	IIIA
+2	2	0	1	0	1	1	IB
+2	2	0	1	0	1	0	IIIA
+2	2	0	1	0	0	1	IIIA
+2	2	0	1	0	0	0	IIIA
+2	2	0	2	1	1	1	IB
+2	2	0	2	1	1	0	IIIA
+2	2	0	2	1	0	1	IIIA
+2	2	0	2	1	0	0	IIIA
+2	2	0	2	0	1	1	IB
+2	2	0	2	0	1	0	IIIA
+2	2	0	2	0	0	1	IIIA
+2	2	0	2	0	0	0	IIIB
+2	2	0	3	1	1	1	IIA
+2	2	0	3	1	1	0	IIIA
+2	2	0	3	1	0	1	IIIA
+2	2	0	3	1	0	0	IIIA
+2	2	0	3	0	1	1	IIB
+2	2	0	3	0	1	0	IIIA
+2	2	0	3	0	0	1	IIA
+2	2	0	3	0	0	0	IIIC
+3	1***	0	1	1	1	1	IB
+3	1***	0	1	1	1	0	IIIA
+3	1***	0	1	1	0	1	IIIA
+3	1***	0	1	1	0	0	IIIA
+3	1***	0	1	0	1	1	IB
+3	1***	0	1	0	1	0	IIIA
+3	1***	0	1	0	0	1	IIIA
+3	1***	0	1	0	0	0	IIIA
+3	1***	0	2	1	1	1	IB
+3	1***	0	2	1	1	0	IIIA
+3	1***	0	2	1	0	1	IIIA
+3	1***	0	2	1	0	0	IIIA
+3	1***	0	2	0	1	1	IB
+3	1***	0	2	0	1	0	IIIA
+3	1***	0	2	0	0	1	IIIA
+3	1***	0	2	0	0	0	IIIB
+3	1***	0	3	1	1	1	IIA
+3	1***	0	3	1	1	0	IIIA
+3	1***	0	3	1	0	1	IIIA
+3	1***	0	3	1	0	0	IIIA
+3	1***	0	3	0	1	1	IIB
+3	1***	0	3	0	1	0	IIIA
+3	1***	0	3	0	0	1	IIA
+3	1***	0	3	0	0	0	IIIC
+3	2	0	1	1	1	1	IB
+3	2	0	1	1	1	0	IIIA
+3	2	0	1	1	0	1	IIIA
+3	2	0	1	1	0	0	IIIA
+3	2	0	1	0	1	1	IB
+3	2	0	1	0	1	0	IIIA
+3	2	0	1	0	0	1	IIIA
+3	2	0	1	0	0	0	IIIA
+3	2	0	2	1	1	1	IB
+3	2	0	2	1	1	0	IIIA
+3	2	0	2	1	0	1	IIIA
+3	2	0	2	1	0	0	IIIA
+3	2	0	2	0	1	1	IB
+3	2	0	2	0	1	0	IIIA
+3	2	0	2	0	0	1	IIIA
+3	2	0	2	0	0	0	IIIB
+3	2	0	3	1	1	1	IIA
+3	2	0	3	1	1	0	IIIA
+3	2	0	3	1	0	1	IIIA
+3	2	0	3	1	0	0	IIIA
+3	2	0	3	0	1	1	IIB
+3	2	0	3	0	1	0	IIIA
+3	2	0	3	0	0	1	IIA
+3	2	0	3	0	0	0	IIIC
+4	0	0	1	1	1	1	IIIA
+4	0	0	1	1	1	0	IIIB
+4	0	0	1	1	0	1	IIIB
+4	0	0	1	1	0	0	IIIB
+4	0	0	1	0	1	1	IIIA
+4	0	0	1	0	1	0	IIIB
+4	0	0	1	0	0	1	IIIB
+4	0	0	1	0	0	0	IIIB
+4	0	0	2	1	1	1	IIIA
+4	0	0	2	1	1	0	IIIB
+4	0	0	2	1	0	1	IIIB
+4	0	0	2	1	0	0	IIIB
+4	0	0	2	0	1	1	IIIA
+4	0	0	2	0	1	0	IIIB
+4	0	0	2	0	0	1	IIIB
+4	0	0	2	0	0	0	IIIC
+4	0	0	3	1	1	1	IIIB
+4	0	0	3	1	1	0	IIIB
+4	0	0	3	1	0	1	IIIB
+4	0	0	3	1	0	0	IIIB
+4	0	0	3	0	1	1	IIIB
+4	0	0	3	0	1	0	IIIC
+4	0	0	3	0	0	1	IIIC
+4	0	0	3	0	0	0	IIIC
+4	1***	0	1	1	1	1	IIIA
+4	1***	0	1	1	1	0	IIIB
+4	1***	0	1	1	0	1	IIIB
+4	1***	0	1	1	0	0	IIIB
+4	1***	0	1	0	1	1	IIIA
+4	1***	0	1	0	1	0	IIIB
+4	1***	0	1	0	0	1	IIIB
+4	1***	0	1	0	0	0	IIIB
+4	1***	0	2	1	1	1	IIIA
+4	1***	0	2	1	1	0	IIIB
+4	1***	0	2	1	0	1	IIIB
+4	1***	0	2	1	0	0	IIIB
+4	1***	0	2	0	1	1	IIIA
+4	1***	0	2	0	1	0	IIIB
+4	1***	0	2	0	0	1	IIIB
+4	1***	0	2	0	0	0	IIIC
+4	1***	0	3	1	1	1	IIIB
+4	1***	0	3	1	1	0	IIIB
+4	1***	0	3	1	0	1	IIIB
+4	1***	0	3	1	0	0	IIIB
+4	1***	0	3	0	1	1	IIIB
+4	1***	0	3	0	1	0	IIIC
+4	1***	0	3	0	0	1	IIIC
+4	1***	0	3	0	0	0	IIIC
+4	2	0	1	1	1	1	IIIA
+4	2	0	1	1	1	0	IIIB
+4	2	0	1	1	0	1	IIIB
+4	2	0	1	1	0	0	IIIB
+4	2	0	1	0	1	1	IIIA
+4	2	0	1	0	1	0	IIIB
+4	2	0	1	0	0	1	IIIB
+4	2	0	1	0	0	0	IIIB
+4	2	0	2	1	1	1	IIIA
+4	2	0	2	1	1	0	IIIB
+4	2	0	2	1	0	1	IIIB
+4	2	0	2	1	0	0	IIIB
+4	2	0	2	0	1	1	IIIA
+4	2	0	2	0	1	0	IIIB
+4	2	0	2	0	0	1	IIIB
+4	2	0	2	0	0	0	IIIC
+4	2	0	3	1	1	1	IIIB
+4	2	0	3	1	1	0	IIIB
+4	2	0	3	1	0	1	IIIB
+4	2	0	3	1	0	0	IIIB
+4	2	0	3	0	1	1	IIIB
+4	2	0	3	0	1	0	IIIC
+4	2	0	3	0	0	1	IIIC
+4	2	0	3	0	0	0	IIIC
+Any	3	0	1	1	1	1	IIIA
+Any	3	0	1	1	1	0	IIIB
+Any	3	0	1	1	0	1	IIIB
+Any	3	0	1	1	0	0	IIIB
+Any	3	0	1	0	1	1	IIIA
+Any	3	0	1	0	1	0	IIIB
+Any	3	0	1	0	0	1	IIIB
+Any	3	0	1	0	0	0	IIIB
+Any	3	0	2	1	1	1	IIIA
+Any	3	0	2	1	1	0	IIIB
+Any	3	0	2	1	0	1	IIIB
+Any	3	0	2	1	0	0	IIIB
+Any	3	0	2	0	1	1	IIIA
+Any	3	0	2	0	1	0	IIIB
+Any	3	0	2	0	0	1	IIIB
+Any	3	0	2	0	0	0	IIIC
+Any	3	0	3	1	1	1	IIIB
+Any	3	0	3	1	1	0	IIIB
+Any	3	0	3	1	0	1	IIIB
+Any	3	0	3	1	0	0	IIIB
+Any	3	0	3	0	1	1	IIIB
+Any	3	0	3	0	1	0	IIIC
+Any	3	0	3	0	0	1	IIIC
+Any	3	0	3	0	0	0	IIIC
+Any	Any	1	Any	Any	Any	Any	IV
+`;
+
+function parseRuleTSV(tsv) {
+  return tsv
+    .trim()
+    .split("\n")
+    .map(line => {
+      const parts = line.trim().split(/\t+/);
+
+      return {
+        T: parts[0],
+        N: parts[1],
+        M: parts[2],
+        Grade: parts[3],
+        HER2: parts[4],
+        ER: parts[5],
+        PR: parts[6],
+        Prognostic: parts[7]
+      };
+    });
+}
+
+const PATHOLOGIC_RULES = parseRuleTSV(PATHOLOGIC_RULES_TSV);
+  
+const CLINICAL_RULES = [
   {
     "T": "is",
     "N": "0",
@@ -4338,7 +4774,12 @@ function calculateAnatomic() {
 function calculatePrognostic() {
   if (!state.T || !state.N || !state.M || !state.Grade || !state.HER2 || !state.ER || !state.PR) return null;
 
-  const match = PROGNOSTIC_RULES.find(rule =>
+  const activeRules =
+  stagingMode === "clinical"
+    ? CLINICAL_RULES
+    : PATHOLOGIC_RULES;
+
+const match = activeRules.find(rule =>
     ruleMatches(rule.T, state.T.value) &&
     ruleMatches(rule.N, state.N.value) &&
     ruleMatches(rule.M, state.M.value) &&
