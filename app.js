@@ -4793,6 +4793,10 @@ const match = activeRules.find(rule =>
 }
 
 function updateResults() {
+  document.getElementById("prognosticTitle").textContent =
+  stagingMode === "clinical"
+    ? "Clinical Prognostic Stage"
+    : "Pathologic Prognostic Stage";
   const anatomic = calculateAnatomic();
   const prognosticMatch = calculatePrognostic();
 
@@ -4827,6 +4831,8 @@ function updateResults() {
 
   document.getElementById("debugBox").textContent = JSON.stringify(debug, null, 2);
 }
+
+
 
 function renderControls() {
   const controls = document.getElementById("controls");
@@ -4875,8 +4881,14 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
   const anatomic = document.getElementById("anatomicResult").textContent;
   const prognostic = document.getElementById("prognosticResult").textContent;
 
-  const textToCopy = `Anatomic Stage: ${anatomic}
-Prognostic Stage: ${prognostic}`;
+  const label =
+  stagingMode === "clinical"
+    ? "Clinical Prognostic Stage"
+    : "Pathologic Prognostic Stage";
+
+const textToCopy =
+`Anatomic Stage: ${anatomic}
+${label}: ${prognostic}`;
 
   try {
     await navigator.clipboard.writeText(textToCopy);
@@ -4891,6 +4903,42 @@ Prognostic Stage: ${prognostic}`;
 document.getElementById("resetBtn").addEventListener("click", reset);
 document.getElementById("debugToggle").addEventListener("change", event => {
   document.getElementById("debugBox").hidden = !event.target.checked;
+});
+
+document.getElementById("clinicalMode").addEventListener("click", () => {
+
+  stagingMode = "clinical";
+
+  document
+    .getElementById("clinicalMode")
+    .classList.add("selected");
+
+  document
+    .getElementById("pathologicMode")
+    .classList.remove("selected");
+
+  document.getElementById("modeDescription").textContent =
+    "Use clinical exam, imaging, biopsy, and pre-treatment receptor/grade data.";
+
+  updateResults();
+});
+
+document.getElementById("pathologicMode").addEventListener("click", () => {
+
+  stagingMode = "pathologic";
+
+  document
+    .getElementById("pathologicMode")
+    .classList.add("selected");
+
+  document
+    .getElementById("clinicalMode")
+    .classList.remove("selected");
+
+  document.getElementById("modeDescription").textContent =
+    "Use final surgical pathology values when available.";
+
+  updateResults();
 });
 
 renderControls();
