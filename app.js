@@ -4755,6 +4755,7 @@ const OPTIONS = [
     options: [
       { label: "< 11", value: "<11" },
       { label: "≥ 11", value: ">=11" }
+      { label: "Not Performed / Not Available", value: "NA" }
     ]
   }
 ];
@@ -4783,7 +4784,9 @@ function calculateAnatomic() {
 
 function calculateOncotypeOverride() {
   if (stagingMode !== "pathologic") return null;
-  if (!state.Oncotype || state.Oncotype.value !== "<11") return null;
+  if (!state.Oncotype || state.Oncotype.value !== "<11") {
+  return null;
+}
 
   if (!state.T || !state.N || !state.M || !state.HER2 || !state.PR) {
     return null;
