@@ -1,23 +1,43 @@
-# Breast Cancer Clinical Prognostic Stage Calculator - Web App
+# Breast Cancer HQ Web App
 
-This is a static web app. It does not require a backend/server.
+Static GitHub Pages version of Breast Cancer HQ.
+
+## Features
+
+- Breast cancer anatomic staging from T, N, M
+- Clinical prognostic staging from T, N, M, Grade, HER2, ER, PR
+- Separate T1 and T1mi buttons
+- N1mi/N1 wildcard handling
+- Debug information toggle
+- Criteria page
+- About/disclaimer page
+- Privacy policy page
+- Fully static HTML/CSS/JavaScript; no backend required
 
 ## Run locally
-Double-click `index.html` to open it in your browser.
 
-## Host for free with GitHub Pages
-1. Create a GitHub account if needed.
-2. Create a new repository, for example `breast-prognostic-stage`.
-3. Upload `index.html`.
-4. Go to repository Settings → Pages.
-5. Set Source to your main branch and root folder.
-6. Save. GitHub will provide a public website URL.
+Open `index.html` in a browser.
 
-## Host for free with Netlify
-1. Create a Netlify account.
-2. Go to Sites/Add new site.
-3. Drag and drop this folder or the ZIP file.
-4. Netlify will provide a public URL.
+## Deploy to GitHub Pages
 
-## Safety note
-This is an educational/reference calculator only. Verify against official AJCC guidance before clinical use.
+1. Create a new GitHub repository, for example `breast-cancer-hq`.
+2. Upload all files in this folder:
+   - `index.html`
+   - `styles.css`
+   - `app.js`
+   - `criteria.html`
+   - `about.html`
+   - `privacy.html`
+   - `README.md`
+3. Go to repository **Settings → Pages**.
+4. Under **Build and deployment**, choose:
+   - Source: Deploy from a branch
+   - Branch: main
+   - Folder: `/root`
+5. Save.
+6. Your site will publish at:
+   `https://YOUR-USERNAME.github.io/breast-cancer-hq/`
+
+## Medical disclaimer
+
+Educational/reference tool only. Verify results independently against official AJCC resources and institutional guidance before clinical use.
