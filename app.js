@@ -4796,7 +4796,7 @@ function updateResults() {
   document.getElementById("prognosticTitle").textContent =
   stagingMode === "clinical"
     ? "Clinical Prognostic Stage"
-    : "Pathologic Prognostic Stage";
+    : "Pathological Prognostic Stage";
   const anatomic = calculateAnatomic();
   const prognosticMatch = calculatePrognostic();
 
@@ -4884,7 +4884,7 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
   const label =
   stagingMode === "clinical"
     ? "Clinical Prognostic Stage"
-    : "Pathologic Prognostic Stage";
+    : "Pathological Prognostic Stage";
 
 const textToCopy =
 `Anatomic Stage: ${anatomic}
