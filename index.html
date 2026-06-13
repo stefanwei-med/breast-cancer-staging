@@ -20,11 +20,17 @@
       <a href="criteria.html">Criteria</a>
       <a href="about.html">About</a>
       <a href="privacy.html">Privacy</a>
-      <button id="copyBtn" type="button">Copy Result</button>
       <button id="resetBtn" type="button">Reset Current Selections</button>
     </nav>
 
-    <section class="results">
+    <p id="helperText" class="helper">
+      Select T, N, and M to calculate anatomic stage.<br>
+      Additionally, select Grade, HER2, ER, and PR to also calculate prognostic stage.
+    </p>
+
+    <section id="controls" class="controls"></section>
+
+      <section class="results">
       <article class="result-card">
         <p>Anatomic Stage</p>
         <h2 id="anatomicResult">N/A</h2>
@@ -38,12 +44,11 @@
       </article>
     </section>
 
-    <p id="helperText" class="helper">
-      Select T, N, and M to calculate anatomic stage.<br>
-      Additionally, select Grade, HER2, ER, and PR to also calculate prognostic stage.
-    </p>
-
-    <section id="controls" class="controls"></section>
+    <div class="result-actions">
+      <button id="copyBtn" class="copy-button">
+        Copy Result
+      </button>
+    </div>
 
     <section class="debug">
       <label>
