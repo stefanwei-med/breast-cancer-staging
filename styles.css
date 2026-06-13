@@ -23,7 +23,7 @@
   height: 1.5em;
   width: auto;
   object-fit: contain;
-  transform: translateY(0.08em);
+  transform: translateY(0.12em);
 }
 
 body {
