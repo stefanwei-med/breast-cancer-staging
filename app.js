@@ -4802,9 +4802,9 @@ function calculateOncotypeOverride() {
     state.M.value === "0";
 
   const isHER2Negative = state.HER2.value === "0";
-  const isPRPositive = state.PR.value === "1";
+  const isERPositive = state.ER.value === "1";
 
-  if ((isT1N0M0 || isT2N0M0) && isHER2Negative && isPRPositive) {
+  if ((isT1N0M0 || isT2N0M0) && isHER2Negative && isERPositive) {
     return "IA"; // change this if your Oncotype <11 rule maps to a different stage
   }
 
