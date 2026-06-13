@@ -4430,7 +4430,23 @@ function reset() {
   document.querySelectorAll(".choice.selected").forEach(button => button.classList.remove("selected"));
   updateResults();
 }
+document.getElementById("copyBtn").addEventListener("click", async () => {
+  const anatomic = document.getElementById("anatomicResult").textContent;
+  const prognostic = document.getElementById("prognosticResult").textContent;
 
+  const textToCopy = `Anatomic Stage: ${anatomic}
+Prognostic Stage: ${prognostic}`;
+
+  try {
+    await navigator.clipboard.writeText(textToCopy);
+    document.getElementById("copyBtn").textContent = "Copied!";
+    setTimeout(() => {
+      document.getElementById("copyBtn").textContent = "Copy Result";
+    }, 1500);
+  } catch {
+    alert(textToCopy);
+  }
+});
 document.getElementById("resetBtn").addEventListener("click", reset);
 document.getElementById("debugToggle").addEventListener("change", event => {
   document.getElementById("debugBox").hidden = !event.target.checked;
